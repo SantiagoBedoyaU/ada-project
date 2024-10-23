@@ -1,11 +1,9 @@
 import numpy as np
-import pandas as pd
 import csv
 import math
 
-
 def read_csv(filename: str):
-    lines = []
+    lines:list[list[str]] = []
     with open(filename, "r") as file:
         csv_file = csv.reader(file)
         for line in csv_file:
@@ -14,7 +12,7 @@ def read_csv(filename: str):
 
 
 def background_conditions(
-    matrix: np.ndarray, initial_state: int, candidate_system: str
+    matrix: np.ndarray, initial_state: str, candidate_system: str
 ):
     active_variable = {}
     for idx, variable in enumerate(candidate_system):
@@ -43,7 +41,7 @@ def background_conditions(
     return matrix
 
 
-def marginalize_cols(matrix: np.ndarray, initial_state: int, candidate_system: int):
+def marginalize_cols(matrix: np.ndarray, initial_state: str, candidate_system: str):
     active_variable = {}
     for idx, variable in enumerate(candidate_system):
         active_variable[int(math.pow(2, idx))] = variable == "1"
@@ -70,11 +68,11 @@ def marginalize_cols(matrix: np.ndarray, initial_state: int, candidate_system: i
                 matrix = np.delete(matrix, delete_rows, 1)
     return matrix
 
-def group_rows(matrix: list[list[int]], key: int, cont: int):
+def group_rows(matrix, key: int, cont: int):
     matrix = np.array(matrix).astype(float)  # Convierte la matriz a tipo float
     rows_to_delete = []
     for i in range(0, key):
-        array1 = matrix[i]        
+        array1 = matrix[i]
         array2 = matrix[i+key]
         subset = np.array([array1, array2])
         matrix[i] = np.sum(subset, axis=0)   # Sumas por columnas
