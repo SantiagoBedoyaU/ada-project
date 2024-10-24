@@ -76,21 +76,23 @@ def marginalize_rows(matrix: np.ndarray, initial_state: str, candidate_system: s
 
     for key, value in reversed(list(active_variable.items())):
         if not value:
-            cont = int(math.log2(key) + 1)
-            matrix = group_rows(matrix, key, cont)
-
+            matrix = group_rows(matrix, key)
     return matrix
 
-def group_rows(matrix: np.ndarray, key: int, cont: int):
+def group_rows(matrix: np.ndarray, key: int):
     matrix = np.array(matrix).astype(float)  # Convierte la matriz a tipo float
     rows_to_delete = []
-    for i in range(0, key):
-        array1 = matrix[i]
-        array2 = matrix[i+key]
-        subset = np.array([array1, array2])
-        matrix[i] = np.sum(subset, axis=0)   # Sumas por columnas
-        matrix[i] = matrix[i] / cont
-        rows_to_delete.append(i+key)
+    row = 0
+    while (row < len(matrix)):
+        for i in range(0, key):
+            array1 = matrix[row]
+            array2 = matrix[row+key]
+            subset = np.array([array1, array2])
+            matrix[row] = np.sum(subset, axis=0)   # Sumas por columnas
+            matrix[row] = matrix[row] / 2
+            rows_to_delete.append(row+key)
+            row += 1
+        row += key
     matrix = np.delete(matrix, rows_to_delete, 0)
     return matrix
 
