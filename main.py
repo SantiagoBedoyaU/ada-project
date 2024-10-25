@@ -69,7 +69,7 @@ def marginalize_cols(matrix: np.ndarray, initial_state: str, candidate_system: s
                 matrix = np.delete(matrix, delete_rows, 1)
     return matrix
 
-def marginalize_rows(matrix: np.ndarray, initial_state: str, candidate_system: str):
+def marginalize_rows(matrix: np.ndarray, candidate_system: str):
     active_variable = {}
     for idx, variable in enumerate(candidate_system):
         active_variable[int(math.pow(2, idx))] = variable == "1"
@@ -77,6 +77,16 @@ def marginalize_rows(matrix: np.ndarray, initial_state: str, candidate_system: s
     for key, value in reversed(list(active_variable.items())):
         if not value:
             matrix = group_rows(matrix, key)
+    return matrix
+
+def marginalize_cols_two(matrix: np.ndarray, candidate_system: str):
+    active_variable = {}
+    for idx, variable in enumerate(candidate_system):
+        active_variable[int(math.pow(2, idx))] = variable == "1"
+
+    for key, value in reversed(list(active_variable.items())):
+        if not value:
+            matrix = group_cols(matrix, key)
     return matrix
 
 def group_rows(matrix: np.ndarray, key: int):
@@ -88,12 +98,28 @@ def group_rows(matrix: np.ndarray, key: int):
             array1 = matrix[row]
             array2 = matrix[row+key]
             subset = np.array([array1, array2])
-            matrix[row] = np.sum(subset, axis=0)   # Sumas por columnas
+            matrix[row] = np.sum(subset, axis=0)   # Sumas por filas
             matrix[row] = matrix[row] / 2
             rows_to_delete.append(row+key)
             row += 1
         row += key
     matrix = np.delete(matrix, rows_to_delete, 0)
+    return matrix
+
+def group_cols(matrix: np.ndarray, key: int):
+    matrix = np.array(matrix).astype(float)  # Convierte la matriz a tipo float
+    cols_to_delete = []
+    col = 0
+    while (col < len(matrix[0])):
+        for i in range(0, key):
+            array1 = matrix[:,col]
+            array2 = matrix[:,col+key]
+            subset = np.array([array1, array2])
+            matrix[:, col] = np.sum(subset, axis=0)   # Sumas por columnas
+            cols_to_delete.append(col+key)
+            col += 1
+        col += key
+    matrix = np.delete(matrix, cols_to_delete, 1)
     return matrix
 
 def print_matrix(matrix):
@@ -109,7 +135,8 @@ def main():
     matrix = np.array(read_csv("matrizGuia.csv"))
     matrix = background_conditions(matrix, initial_state, candidate_system)
     matrix = marginalize_cols(matrix, initial_state, candidate_system)
-    matrix = marginalize_rows(matrix, initial_state, present_subsystem)
+    matrix = marginalize_cols_two(matrix, present_subsystem)
+    # matrix = marginalize_rows(matrix, present_subsystem)
     print_matrix(matrix)
 
 main()
