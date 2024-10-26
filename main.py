@@ -1,4 +1,6 @@
 import numpy as np
+from pyemd import emd
+from numpy . typing import NDArray
 import csv
 import math
 import texttable
@@ -98,6 +100,26 @@ def tensor_product(matrix_1, matrix_2):
         
     return matrix
 
+def emd_pyphi (u: NDArray[np.float64], v: NDArray[np.float64]) -> float :
+    """
+    Calculate the Earth Mover's Distance (EMD) between two probability
+    distributions u and v.
+    The Hamming distance was used as the ground metric.
+    """
+    if not all(isinstance(arr, np.ndarray) for arr in [u,v]):
+        raise TypeError("u and v must be numpy arrays.")
+    n: int = len(u)
+    costs : NDArray[np.float64] = np.empty((n,n))
+    for i in range (n):
+        costs [i, :i] = [hamming_distance(i,j) for j in range (i)]
+        costs [:i, i] = costs [i, :i]
+    np.fill_diagonal(costs, 0)
+    cost_matrix : NDArray[np.float64] = np.array(costs, dtype =np.float64)
+    return emd(u, v, cost_matrix)
+
+def hamming_distance (a: int, b: int) -> int:
+    return (a ^ b).bit_count()
+
 def print_matrix(matrix):
     table = texttable.Texttable()
     for row in matrix:
@@ -110,8 +132,15 @@ def main():
     )[0]
     matrix = np.array(read_csv("matrizGuia.csv"))
     matrix = background_conditions(matrix, initial_state, candidate_system)
-    matrix = marginalize_rows_or_cols(matrix, present_subsystem, 0)
-    matrix = marginalize_rows_or_cols(matrix, future_subsystem, 1)
+    old_matrix = matrix.copy()
+    old_matrix = np.array(old_matrix).astype(float)
+    # matrix = marginalize_rows_or_cols(matrix, present_subsystem, 0)
+    matrix_1 = marginalize_rows_or_cols(matrix, '100', 1)
+    matrix_2 = marginalize_rows_or_cols(matrix, '010', 1)
+    matrix_3 = marginalize_rows_or_cols(matrix, '001', 1)
+    matrix = tensor_product(matrix_1, matrix_2)
+    matrix = tensor_product(matrix, matrix_3)
     print_matrix(matrix)
+    print(emd_pyphi(matrix[7], old_matrix[5]))
 
 main()
