@@ -94,10 +94,9 @@ def tensor_product(matrix_1, matrix_2):
     n1 = matrix_1.shape[1]
     n2 = matrix_2.shape[1]
     matrix = np.zeros((m, n1 * n2))
-    
-    for i in range(m):
-        matrix[i] = np.kron(matrix_1[i], matrix_2[i])
-        
+    for i in range(n2):
+        for j in range(n1):
+            matrix[:, i * n1 + j] = matrix_1[:, j] * matrix_2[:, i]
     return matrix
 
 def emd_pyphi (u: NDArray[np.float64], v: NDArray[np.float64]) -> float :
@@ -132,15 +131,14 @@ def main():
     )[0]
     matrix = np.array(read_csv("matrizGuia.csv"))
     matrix = background_conditions(matrix, initial_state, candidate_system)
-    old_matrix = matrix.copy()
-    old_matrix = np.array(old_matrix).astype(float)
+    # old_matrix = matrix.copy()
+    # old_matrix = np.array(old_matrix).astype(float)
     # matrix = marginalize_rows_or_cols(matrix, present_subsystem, 0)
     matrix_1 = marginalize_rows_or_cols(matrix, '100', 1)
     matrix_2 = marginalize_rows_or_cols(matrix, '010', 1)
     matrix_3 = marginalize_rows_or_cols(matrix, '001', 1)
     matrix = tensor_product(matrix_1, matrix_2)
     matrix = tensor_product(matrix, matrix_3)
-    print_matrix(matrix)
-    print(emd_pyphi(matrix[7], old_matrix[5]))
+    # print(emd_pyphi(matrix[7], old_matrix[5]))
 
 main()
