@@ -28,14 +28,14 @@ def cut_matrix(matrix: np.ndarray, key: int, row: int, add: int, len: int, axis:
     matrix = np.delete(matrix, delete_rows, axis)
     return matrix
 
-def cut_rows_or_cols(matrix: np.ndarray, initial_state: str, active_variable: {bool}, axis: int):
+def cut_rows_or_cols(matrix: np.ndarray, initial_state: str, active_variable: dict[int, bool], axis: int):
     for key, value in reversed(list(active_variable.items())):
         if not value:
             if axis == 0:
                 lenMatrix = len(matrix)
             else:
                 lenMatrix = len(matrix[0])
-                
+
             if initial_state[int(math.log2(key))] == "1":
                 row = 0
                 add = key
@@ -80,7 +80,7 @@ def group_rows_or_cols(matrix: np.ndarray, key: int, axis: int):
             else:
                 subset = np.array([matrix[:,pointer], matrix[:,pointer+key]])
                 matrix[:, pointer] = np.sum(subset, axis=0) # Sumas por columnas
-            
+
             to_delete.append(pointer+key)
             pointer += 1
         pointer += key
@@ -94,10 +94,10 @@ def tensor_product(matrix_1, matrix_2):
     n1 = matrix_1.shape[1]
     n2 = matrix_2.shape[1]
     matrix = np.zeros((m, n1 * n2))
-    
+
     for i in range(m):
         matrix[i] = np.kron(matrix_1[i], matrix_2[i])
-        
+
     return matrix
 
 def emd_pyphi (u: NDArray[np.float64], v: NDArray[np.float64]) -> float :
